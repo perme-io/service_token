@@ -31,8 +31,8 @@ deployJar {
     keystore = rootProject.hasProperty('keystoreName') ? "$keystoreName" : ''
     password = rootProject.hasProperty('keystorePass') ? "$keystorePass" : ''
     parameters {
-        arg('_name', 'PermeServiceToken')
-        arg('_symbol', 'PPME')
+        arg('_name', 'PermeServiceToken-dev')
+        arg('_symbol', 'PPME-dev')
         arg('_decimals', '0x12')
         arg('_initialSupply', '0x3e8')
     }

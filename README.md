@@ -14,7 +14,9 @@
 $ git clone git@github.com:icon-project/goloop.git
 $ GOLOOP_ROOT=/path/to/goloop
 $ cd ${GOLOOP_ROOT}
-$ make goloop
+$ brew install rocksdb
+$ brew install snappy
+$ CGO_CFLAGS="-I/opt/homebrew/opt/rocksdb/include" CGO_LDFLAGS="-L/opt/homebrew/opt/rocksdb/lib -L/opt/homebrew/opt/snappy/lib -lrocksdb -lstdc++ -lm -lz -lbz2 -lsnappy" make goloop
 $ ./bin/goloop version
 
 goloop version v1.2.6 ...  # Success if version information is displayed.
@@ -50,15 +52,37 @@ $ gradle cleanTest test -i
 
 Generate a keystore and get test ICX (see above.)
 
-Deploy the optimized jar
+Update Token Information
+
+edit: java-score/build.gradle
+~~~gradle
+   parameters {
+        arg('_name', 'YourTokenName')
+        arg('_symbol', 'TTT <- YourTokenSymbol')
+        arg('_decimals', '0x12 <- YourTokenDecimals')
+        arg('_initialSupply', '0x3e8 <- YourTokenInitialSupply')
+    }
 ~~~
-${GOLOOP_ROOT}/bin/goloop rpc sendtx deploy ./java-score/build/libs/java-score-0.9.0-optimized.jar --uri https://lisbon.net.solidwallet.io/api/v3 --key_store keystore.json --key_password xxxx --nid 2 --step_limit 10000000000 --content_type application/java
- 
-"0xe33fb39f737b4698b3d93...1b73a9831f2786bdf3"  # Success if tx hash(0xADDR) is displayed.
+
+Deploy
 ~~~
+$ gradle java-score:deployToLisbon -PkeystoreName=keystore.json -PkeystorePass=xxxx
+~~~
+
+Check Contract on https://tracker.lisbon.icon.community/
 
 Update Score
 ~~~
 ${GOLOOP_ROOT}/bin/goloop rpc sendtx deploy ./java-score/build/libs/java-score-0.9.0-optimized.jar --uri https://lisbon.net.solidwallet.io/api/v3 --key_store keystore.json --key_password xxxx --nid 2 --step_limit 10000000000 --content_type application/java --to cxf3...f57
 ${GOLOOP_ROOT}/bin/goloop rpc txresult 0x31...fdb --uri https://lisbon.net.solidwallet.io/api/v3
+~~~
+
+
+### Test with Deployed Contract
+~~~
+# get_balance
+${GOLOOP_ROOT}/bin/goloop rpc call --to cx2f97...2819 --uri https://lisbon.net.solidwallet.io/api/v3 --method balanceOf --param _owner=hx8bb9...07c6
+
+# send_token
+${GOLOOP_ROOT}/bin/goloop rpc sendtx call --to cx2f97...2819 --uri https://lisbon.net.solidwallet.io/api/v3 --key_store keystore.json --key_password xxxx --nid 2 --step_limit 10000000000 --method transfer --param _to=hx608a...5dcd --param _value=1
 ~~~
